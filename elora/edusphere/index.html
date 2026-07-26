@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduSphere — Personalized AI Learning for Indian Syllabus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6d28d9;
+      --primary-dark: #5b21b6;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e0e7ff 100%);
+      min-height: 100vh;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -12px rgba(109, 40, 217, 0.25);
+    }
+    .progress-ring {
+      transition: stroke-dashoffset 0.8s ease;
+    }
+    .badge-pop {
+      animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      80% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .float { animation: float 3s ease-in-out infinite; }
+    .gradient-text {
+      background: linear-gradient(135deg, #6d28d9, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subject-math { --sub-color: #8b5cf6; }
+    .subject-physics { --sub-color: #3b82f6; }
+    .subject-chemistry { --sub-color: #10b981; }
+    .subject-biology { --sub-color: #f59e0b; }
+    .hidden-view { display: none !important; }
+    .view { display: block; }
+    .question-card {
+      transition: all 0.2s;
+    }
+    .question-card.selected {
+      border-color: #6d28d9;
+      background: #f5f3ff;
+    }
+    .option-btn:hover {
+      border-color: #a78bfa;
+      background: #faf5ff;
+    }
+    .option-btn.correct {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+    .option-btn.wrong {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <!-- Navigation -->
+  <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50 glass shadow-sm hidden">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="showView('dashboard')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">E</div>
+        <span class="font-display font-bold text-xl gradient-text">EduSphere</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600">
+          <i class="fas fa-star text-amber-400"></i>
+          <span id="nav-xp">0 XP</span>
+        </div>
+        <button onclick="showView('profile')" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 text-sm font-medium hover:bg-violet-200 transition">
+          <i class="fas fa-user-circle"></i>
+          <span id="nav-name">Student</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== VIEW: LANDING ========== -->
+  <div id="view-landing" class="view min-h-screen flex flex-col">
+    <div class="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center relative overflow-hidden">
+      <!-- Decorative blobs -->
+      <div class="absolute top-20 left-10 w-72 h-72 bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 float"></div>
+      <div class="absolute bottom-20 right-10 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 float" style="animation-delay: 1s;"></div>
+      
+      <div class="relative z-10 max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-100 text-violet-700 text-sm font-semibold mb-6">
+          <i class="fas fa-rocket"></i> NEXTGEN 26'1 · Track A · Future of Education
+        </div>
+        <h1 class="font-display text-5xl sm:text-6xl font-bold mb-4 leading-tight">
+          Master Your Subjects<br>
+          <span class="gradient-text">Your Way</span>
+        </h1>
+        <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
+          Personalized AI-powered learning for the Indian syllabus. Discover your strengths, conquer weaknesses, and make learning fun — with Physics helping Math, Chemistry unlocking Biology, and more.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="startOnboarding()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-700 text-white font-semibold text-lg shadow-lg shadow-violet-300 hover:shadow-xl hover:from-violet-700 hover:to-violet-800 transition transform hover:-translate-y-0.5">
+            Start Learning Free <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+          <button onclick="showDemo()" class="px-8 py-3.5 rounded-xl bg-white text-violet-700 font-semibold text-lg border-2 border-violet-200 hover:border-violet-400 transition">
+            See How It Works
+          </button>
+        </div>
+        
+        <!-- Feature pills -->
+        <div class="mt-12 flex flex-wrap justify-center gap-3">
+          <span class="px-4 py-2 rounded-full glass text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-brain text-violet-500"></i> Diagnostic Test
+          </span>
+          <span class="px-4 py-2 rounded-full glass text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-link text-cyan-500"></i> Cross-Subject Learning
+          </span>
+          <span class="px-4 py-2 rounded-full glass text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-gamepad text-amber-500"></i> Gamified & Fun
+          </span>
+          <span class="px-4 py-2 rounded-full glass text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-sliders-h text-emerald-500"></i> Fully Personalized
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Subjects preview -->
+    <div class="bg-white/60 border-t border-slate-200 py-10">
+      <div class="max-w-5xl mx-auto px-4">
+        <h2 class="text-center font-display font-bold text-2xl mb-6 text-slate-700">Built for Indian School Syllabus</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="glass rounded-2xl p-5 text-center card-hover">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center text-2xl text-violet-600 mb-3"><i class="fas fa-square-root-alt"></i></div>
+            <h3 class="font-bold">Mathematics</h3>
+            <p class="text-xs text-slate-500 mt-1">Algebra · Geometry · Calculus</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center card-hover">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-100 flex items-center justify-center text-2xl text-blue-600 mb-3"><i class="fas fa-atom"></i></div>
+            <h3 class="font-bold">Physics</h3>
+            <p class="text-xs text-slate-500 mt-1">Mechanics · Optics · Electricity</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center card-hover">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl text-emerald-600 mb-3"><i class="fas fa-flask"></i></div>
+            <h3 class="font-bold">Chemistry</h3>
+            <p class="text-xs text-slate-500 mt-1">Organic · Inorganic · Physical</p>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center card-hover">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-100 flex items-center justify-center text-2xl text-amber-600 mb-3"><i class="fas fa-dna"></i></div>
+            <h3 class="font-bold">Biology</h3>
+            <p class="text-xs text-slate-500 mt-1">Cell · Genetics · Human Body</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: ONBOARDING ========== -->
+  <div id="view-onboarding" class="hidden-view min-h-screen pt-8 pb-16 px-4">
+    <div class="max-w-xl mx-auto">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold mb-4">E</div>
+        <h1 class="font-display text-3xl font-bold mb-2">Let's personalize your journey</h1>
+        <p class="text-slate-600">Tell us a bit about you so we can tailor everything perfectly.</p>
+      </div>
+
+      <div class="glass rounded-3xl p-6 sm:p-8 shadow-xl">
+        <!-- Step indicator -->
+        <div class="flex items-center justify-center gap-2 mb-8">
+          <div id="step-1-dot" class="w-3 h-3 rounded-full bg-violet-600"></div>
+          <div class="w-8 h-0.5 bg-slate-200"></div>
+          <div id="step-2-dot" class="w-3 h-3 rounded-full bg-slate-200"></div>
+          <div class="w-8 h-0.5 bg-slate-200"></div>
+          <div id="step-3-dot" class="w-3 h-3 rounded-full bg-slate-200"></div>
+        </div>
+
+        <!-- Step 1: Name & Class -->
+        <div id="onboard-step-1">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">What should we call you?</label>
+          <input id="user-name" type="text" placeholder="Your name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none mb-6 text-lg">
+          
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Which class are you in?</label>
+          <div class="grid grid-cols-4 gap-3 mb-8">
+            <button onclick="selectClass(9)" class="class-btn px-4 py-3 rounded-xl border-2 border-slate-200 font-semibold hover:border-violet-400 transition" data-class="9">9</button>
+            <button onclick="selectClass(10)" class="class-btn px-4 py-3 rounded-xl border-2 border-slate-200 font-semibold hover:border-violet-400 transition" data-class="10">10</button>
+            <button onclick="selectClass(11)" class="class-btn px-4 py-3 rounded-xl border-2 border-slate-200 font-semibold hover:border-violet-400 transition" data-class="11">11</button>
+            <button onclick="selectClass(12)" class="class-btn px-4 py-3 rounded-xl border-2 border-slate-200 font-semibold hover:border-violet-400 transition" data-class="12">12</button>
+          </div>
+          <button onclick="nextOnboardStep(2)" class="w-full py-3.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition">Continue</button>
+        </div>
+
+        <!-- Step 2: Subjects -->
+        <div id="onboard-step-2" class="hidden">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Which subjects do you want to master?</label>
+          <p class="text-sm text-slate-500 mb-4">Select at least one. You can change this anytime.</p>
+          <div class="space-y-3 mb-8">
+            <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-violet-300 transition subject-check">
+              <input type="checkbox" value="math" class="w-5 h-5 rounded text-violet-600 focus:ring-violet-500" checked>
+              <div class="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center text-violet-600"><i class="fas fa-square-root-alt"></i></div>
+              <div>
+                <div class="font-semibold">Mathematics</div>
+                <div class="text-xs text-slate-500">Algebra, Geometry, Trigonometry & more</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-300 transition subject-check">
+              <input type="checkbox" value="physics" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" checked>
+              <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-atom"></i></div>
+              <div>
+                <div class="font-semibold">Physics</div>
+                <div class="text-xs text-slate-500">Mechanics, Light, Electricity & more</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-300 transition subject-check">
+              <input type="checkbox" value="chemistry" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500" checked>
+              <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-flask"></i></div>
+              <div>
+                <div class="font-semibold">Chemistry</div>
+                <div class="text-xs text-slate-500">Reactions, Bonds, Organic chemistry</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-amber-300 transition subject-check">
+              <input type="checkbox" value="biology" class="w-5 h-5 rounded text-amber-600 focus:ring-amber-500" checked>
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-dna"></i></div>
+              <div>
+                <div class="font-semibold">Biology</div>
+                <div class="text-xs text-slate-500">Life processes, Genetics, Ecology</div>
+              </div>
+            </label>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="nextOnboardStep(1)" class="flex-1 py-3.5 rounded-xl border-2 border-slate-200 font-semibold hover:bg-slate-50 transition">Back</button>
+            <button onclick="nextOnboardStep(3)" class="flex-1 py-3.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Ready for test -->
+        <div id="onboard-step-3" class="hidden text-center">
+          <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center text-white text-3xl mb-6">
+            <i class="fas fa-clipboard-check"></i>
+          </div>
+          <h2 class="font-display text-2xl font-bold mb-3">Time for your Diagnostic Test!</h2>
+          <p class="text-slate-600 mb-6">
+            A short, fun quiz to discover your strengths and areas to grow. 
+            We'll use this to build a learning path that actually works for <span class="font-semibold text-violet-600" id="preview-name">you</span>.
+          </p>
+          <div class="bg-violet-50 rounded-2xl p-4 mb-6 text-left">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-lightbulb text-amber-500 mt-1"></i>
+              <div class="text-sm text-slate-700">
+                <strong>How it works:</strong> We'll teach your weaker topics by connecting them to subjects you're already strong in — making tough concepts click faster and stick longer.
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="nextOnboardStep(2)" class="flex-1 py-3.5 rounded-xl border-2 border-slate-200 font-semibold hover:bg-slate-50 transition">Back</button>
+            <button onclick="startDiagnostic()" class="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-semibold hover:opacity-90 transition">
+              Start Diagnostic <i class="fas fa-play ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: DIAGNOSTIC TEST ========== -->
+  <div id="view-diagnostic" class="hidden-view min-h-screen pt-8 pb-16 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="font-display text-2xl font-bold">Diagnostic Assessment</h1>
+          <p class="text-slate-500 text-sm">Discover your superpowers & growth areas</p>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-medium text-slate-500">Question</div>
+          <div class="font-display font-bold text-xl"><span id="q-current">1</span> / <span id="q-total">12</span></div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="h-2 bg-slate-200 rounded-full mb-8 overflow-hidden">
+        <div id="diag-progress" class="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full transition-all duration-500" style="width: 8%"></div>
+      </div>
+
+      <div id="question-container" class="glass rounded-3xl p-6 sm:p-8 shadow-xl mb-6">
+        <!-- Question injected by JS -->
+      </div>
+
+      <div class="flex justify-between">
+        <button id="prev-q-btn" onclick="prevQuestion()" class="px-5 py-2.5 rounded-xl border-2 border-slate-200 font-medium text-slate-600 hover:bg-slate-50 transition disabled:opacity-40" disabled>
+          <i class="fas fa-arrow-left mr-1"></i> Previous
+        </button>
+        <button id="next-q-btn" onclick="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition">
+          Next <i class="fas fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: RESULTS ========== -->
+  <div id="view-results" class="hidden-view min-h-screen pt-8 pb-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 text-white text-3xl mb-4 badge-pop">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <h1 class="font-display text-3xl font-bold mb-2">Your Learning Profile is Ready!</h1>
+        <p class="text-slate-600">We've mapped your strengths and created a smart path just for you.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <!-- Strengths -->
+        <div class="glass rounded-3xl p-6 shadow-lg">
+          <h2 class="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-bolt text-amber-500"></i> Your Strengths
+          </h2>
+          <div id="strengths-list" class="space-y-3">
+            <!-- Injected -->
+          </div>
+        </div>
+        <!-- Growth areas -->
+        <div class="glass rounded-3xl p-6 shadow-lg">
+          <h2 class="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-seedling text-emerald-500"></i> Growth Opportunities
+          </h2>
+          <div id="weaknesses-list" class="space-y-3">
+            <!-- Injected -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Radar chart -->
+      <div class="glass rounded-3xl p-6 shadow-lg mb-8">
+        <h2 class="font-display font-bold text-lg mb-4 text-center">Subject Mastery Snapshot</h2>
+        <div class="max-w-md mx-auto">
+          <canvas id="radar-chart" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- Cross-learning insight -->
+      <div class="bg-gradient-to-r from-violet-600 to-cyan-500 rounded-3xl p-6 text-white mb-8 shadow-xl">
+        <h2 class="font-display font-bold text-xl mb-2 flex items-center gap-2">
+          <i class="fas fa-magic"></i> Your Personal Superpower
+        </h2>
+        <p id="cross-insight" class="text-violet-100 text-lg">
+          <!-- Injected: e.g. "We'll use your Physics strength to unlock Mathematics concepts through real-world force & motion examples!" -->
+        </p>
+      </div>
+
+      <div class="text-center">
+        <button onclick="goToDashboard()" class="px-10 py-4 rounded-2xl bg-white text-violet-700 font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5 border-2 border-violet-200">
+          Open My Learning Dashboard <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: DASHBOARD ========== -->
+  <div id="view-dashboard" class="hidden-view min-h-screen pt-20 pb-16 px-4">
+    <div class="max-w-6xl mx-auto">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="font-display text-3xl font-bold">Hey <span id="dash-name">Student</span>! 👋</h1>
+          <p class="text-slate-600">Class <span id="dash-class">10</span> · Ready to level up today?</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-4 py-2 rounded-xl bg-amber-100 text-amber-800 font-semibold flex items-center gap-2">
+            <i class="fas fa-fire"></i> <span id="streak">0</span> day streak
+          </div>
+          <div class="px-4 py-2 rounded-xl bg-violet-100 text-violet-800 font-semibold flex items-center gap-2">
+            <i class="fas fa-star"></i> <span id="total-xp">0</span> XP
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended path -->
+      <div class="glass rounded-3xl p-6 mb-8 shadow-lg border-l-4 border-violet-500">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 text-xl shrink-0">
+            <i class="fas fa-route"></i>
+          </div>
+          <div>
+            <h2 class="font-display font-bold text-lg mb-1">Today's Recommended Path</h2>
+            <p id="rec-path" class="text-slate-600">Based on your profile, start with a connected learning module that bridges your strengths to growth areas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modules grid -->
+      <h2 class="font-display font-bold text-xl mb-4">Your Learning Modules</h2>
+      <div id="modules-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Quick stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-display font-bold text-violet-600" id="stat-modules">0</div>
+          <div class="text-sm text-slate-500">Modules Completed</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-display font-bold text-cyan-600" id="stat-accuracy">0%</div>
+          <div class="text-sm text-slate-500">Quiz Accuracy</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-display font-bold text-emerald-600" id="stat-topics">0</div>
+          <div class="text-sm text-slate-500">Topics Mastered</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-display font-bold text-amber-600" id="stat-badges">0</div>
+          <div class="text-sm text-slate-500">Badges Earned</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: MODULE ========== -->
+  <div id="view-module" class="hidden-view min-h-screen pt-20 pb-16 px-4">
+    <div class="max-w-3xl mx-auto">
+      <button onclick="showView('dashboard')" class="mb-6 text-violet-600 font-medium hover:underline flex items-center gap-1">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+      
+      <div id="module-content" class="glass rounded-3xl p-6 sm:p-8 shadow-xl">
+        <!-- Injected -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VIEW: PROFILE ========== -->
+  <div id="view-profile" class="hidden-view min-h-screen pt-20 pb-16 px-4">
+    <div class="max-w-xl mx-auto">
+      <h1 class="font-display text-3xl font-bold mb-6">Your Preferences</h1>
+      
+      <div class="glass rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Display Name</label>
+          <input id="profile-name" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Class</label>
+          <select id="profile-class" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none">
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+            <option value="12">Class 12</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-3">Subjects of Interest</label>
+          <div class="space-y-2" id="profile-subjects">
+            <!-- Checkboxes injected -->
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200">
+          <button onclick="saveProfile()" class="w-full py-3.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition">
+            Save Changes
+          </button>
+          <button onclick="retakeDiagnostic()" class="w-full mt-3 py-3 rounded-xl border-2 border-violet-200 text-violet-700 font-semibold hover:bg-violet-50 transition">
+            Retake Diagnostic Test
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <button onclick="resetAll()" class="text-sm text-slate-400 hover:text-red-500 transition">Reset all data & start over</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl bg-slate-800 text-white font-medium shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2">
+    <i class="fas fa-check-circle text-emerald-400"></i>
+    <span id="toast-msg">Saved!</span>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

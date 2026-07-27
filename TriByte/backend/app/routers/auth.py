@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
-from app.core.config import settings
+from core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

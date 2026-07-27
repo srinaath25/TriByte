@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-import os
+
+from app.routers import auth, subjects
 
 load_dotenv()
 
@@ -11,14 +12,17 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Allow frontend (and teammates) to call the API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later we will restrict this
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(subjects.router)
 
 @app.get("/")
 def root():

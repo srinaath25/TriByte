@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("https://lgxlpengtkaqtxixbyic.supabase.co/rest/v1/")
-SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxneGxwZW5ndGthcXR4aXhieWljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTA2MzM0MSwiZXhwIjoyMTAwNjM5MzQxfQ.BMHs2XYJI69A_eTvaV6r8p1_gpT84PoQQJ6T3ZoYtuk")  # use service role for insert
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")  # use service role for insert
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 

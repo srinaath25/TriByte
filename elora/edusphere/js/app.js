@@ -694,3 +694,10 @@ document.addEventListener("DOMContentLoaded", function () {
     showView("landing");
   }
 });
+
+fetch("http://localhost:8000/subjects")
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+    // then update the HTML with this data
+  });

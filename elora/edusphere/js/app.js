@@ -469,6 +469,7 @@ function showDemo() {
 
 
 // ---------- DIAGNOSTIC ----------
+console.log(state.subjects)
 async function startDiagnostic() {
   showView("diagnostic");
   document.getElementById("question-container").innerHTML = "<p>Loading questions...</p>";

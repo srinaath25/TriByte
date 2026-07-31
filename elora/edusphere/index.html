@@ -90,6 +90,39 @@
   </style>
 </head>
 <body class="text-slate-800">
+  <!-- Floating AI Tutor Chat Widget -->
+<div id="ai-chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: sans-serif;">
+  <!-- Toggle Button -->
+  <button onclick="toggleAIChat()" style="background: #4f46e5; color: white; border: none; padding: 12px 18px; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-weight: bold;">
+    💬 AI Tutor
+  </button>
+
+  <!-- Chat Window (Hidden by default) -->
+  <div id="ai-chat-window" style="display: none; width: 340px; height: 450px; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; margin-bottom: 10px; border: 1px solid #e5e7eb;">
+    
+    <!-- Header -->
+    <div style="background: #4f46e5; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-weight: bold; font-size: 14px;">EduSphere AI Doubt Solver</span>
+      <button onclick="toggleAIChat()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="ai-chat-messages" style="flex: 1; padding: 12px; overflow-y: auto; background: #f9fafb; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+      <div style="text-align: left;">
+        <div style="background: white; padding: 8px 12px; border-radius: 8px; display: inline-block; border: 1px solid #e5e7eb; max-width: 85%;">
+          Hi there! Stuck on a question or need a concept explained? Ask away!
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div style="padding: 10px; background: white; border-top: 1px solid #e5e7eb; display: flex; gap: 6px;">
+      <input type="text" id="ai-chat-input" placeholder="Type your doubt here..." style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; font-size: 13px;" onkeypress="if(event.key==='Enter') sendStreamedMessage()" />
+      <button onclick="sendStreamedMessage()" style="background: #4f46e5; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">Send</button>
+    </div>
+
+  </div>
+</div>
   <!-- Navigation -->
   <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50 glass shadow-sm hidden">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">

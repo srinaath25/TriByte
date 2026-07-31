@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from app.routers import auth, subjects, questions
+# At the top with your other router imports:
+from app.routers import auth, subjects, chat 
+
+
 
 load_dotenv()
 
@@ -23,6 +27,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(subjects.router)
+app.include_router(chat.router)
 app.include_router(questions.router)
 
 @app.get("/")

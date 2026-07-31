@@ -1,5 +1,155 @@
 // EduSphere - Connected to FastAPI + Supabase backend
 const API_BASE = "http://localhost:8000";
+// Keep track of conversation history across turns
+let chatHistory = [];
+
+// Optional: Reference to the current question object if your quiz page tracks it
+let activeQuizQuestion = null; 
+
+function toggleAIChat() {
+  const win = document.getElementById('ai-chat-window');
+  win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+}
+
+async function sendStreamedMessage() {
+  const inputEl = document.getElementById('ai-chat-input');
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  // 1. Render User Message
+  appendChatMessage('user', text);
+  inputEl.value = '';
+
+  // 2. Create empty bot bubble for streaming text insertion
+  const botBubble = createEmptyBotBubble();
+
+  try {
+    const response = await fetch('http://localhost:8000/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        history: chatHistory,
+        currentQuestion: activeQuizQuestion
+      })
+    });
+
+    if (!response.ok) {
+      botBubble.textContent = "Server error. Please check your backend logs.";
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullResponseText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      // Decode incoming chunk and append to buffer
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete lines from the buffer
+      let lines = buffer.split('\n\n');
+      // Keep the last incomplete fragment in the buffer
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        
+        if (trimmedLine.startsWith('data: ')) {
+          const rawData = trimmedLine.replace(/^data:\s*/, '').trim();
+
+          if (rawData === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(rawData);
+            
+            if (parsed.error) {
+              botBubble.textContent = `Error: ${parsed.error}`;
+              return;
+            }
+
+            if (parsed.text) {
+              fullResponseText += parsed.text;
+              // Replace "..." with the streamed text in real time
+              botBubble.textContent = fullResponseText;
+              scrollToBottom();
+            }
+          } catch (e) {
+            console.error("JSON parse error on line:", rawData, e);
+          }
+        }
+      }
+    }
+
+    // 3. Save to conversation history for multi-turn chat memory
+    if (fullResponseText) {
+      chatHistory.push({ role: 'user', parts: [{ text: text }] });
+      chatHistory.push({ role: 'model', parts: [{ text: fullResponseText }] });
+    }
+
+  } catch (err) {
+    console.error("Chat error:", err);
+    botBubble.textContent = "Connection error. Please try again.";
+  }
+}
+function appendChatMessage(sender, text) {
+  const container = document.getElementById('ai-chat-messages');
+  const wrapper = document.createElement('div');
+  wrapper.style.textAlign = sender === 'user' ? 'right' : 'left';
+
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `
+    background: ${sender === 'user' ? '#4f46e5' : 'white'};
+    color: ${sender === 'user' ? 'white' : '#1f2937'};
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    max-width: 85%;
+    text-align: left;
+    border: ${sender === 'user' ? 'none' : '1px solid #e5e7eb'};
+    word-break: break-word;
+  `;
+  bubble.textContent = text;
+
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  scrollToBottom();
+}
+
+function createEmptyBotBubble() {
+  const container = document.getElementById('ai-chat-messages');
+  const wrapper = document.createElement('div');
+  wrapper.style.textAlign = 'left';
+
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `
+    background: white;
+    color: #1f2937;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    max-width: 85%;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+    white-space: pre-wrap;
+    word-break: break-word;
+  `;
+  bubble.textContent = '...';
+
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  scrollToBottom();
+  return bubble;
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('ai-chat-messages');
+  container.scrollTop = container.scrollHeight;
+}
 
 let state = {
   id: null,

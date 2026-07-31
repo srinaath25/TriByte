@@ -2,11 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.routers import auth, subjects, questions
-# At the top with your other router imports:
-from app.routers import auth, subjects, chat 
-
-
+from app.routers import auth, subjects, questions, chat
 
 load_dotenv()
 

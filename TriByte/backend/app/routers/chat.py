@@ -24,7 +24,6 @@ async def generate_chat_stream(request_data: ChatRequest):
         yield f"data: {json.dumps({'error': 'GEMINI_API_KEY is missing from environment variables.'})}\n\n"
         yield "data: [DONE]\n\n"
         return
-
     client = genai.Client(api_key=api_key)
 
     system_instruction = (
@@ -60,7 +59,7 @@ async def generate_chat_stream(request_data: ChatRequest):
 
     try:
         response_stream = client.models.generate_content_stream(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,

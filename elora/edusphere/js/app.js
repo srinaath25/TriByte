@@ -24,7 +24,7 @@ async function sendStreamedMessage() {
   const botBubble = createEmptyBotBubble();
 
   try {
-    const response = await fetch('http://localhost:8000/api/chat/stream', {
+    const response = await fetch('https://edusphere-api-dzhc.onrender.com/api/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -871,7 +871,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-fetch("http://localhost:8000/subjects")
+fetch("https://edusphere-api-dzhc.onrender.com/subjects")
   .then(res => res.json())
   .then(data => {
     console.log(data);

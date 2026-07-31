@@ -317,16 +317,35 @@ function showDemo() {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 }
 
+
 // ---------- DIAGNOSTIC ----------
-function startDiagnostic() {
-  const relevant = (typeof DIAGNOSTIC_QUESTIONS !== "undefined")
-    ? DIAGNOSTIC_QUESTIONS.filter((q) => state.subjects.includes(q.subject))
-    : [];
-  state.diagQuestions = relevant.length ? relevant : (DIAGNOSTIC_QUESTIONS || []);
-  state.currentQuestionIndex = 0;
-  state.answers = {};
+async function startDiagnostic() {
   showView("diagnostic");
-  renderQuestion();
+  document.getElementById("question-container").innerHTML = "<p>Loading questions...</p>";
+
+  try {
+    const res = await fetch(API_BASE + "/questions/?class_level=" + state.class);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Failed to load questions");
+
+    const allQuestions = data.questions || [];
+    const relevant = allQuestions.filter((q) => state.subjects.includes(q.subject));
+
+    state.diagQuestions = relevant.length ? relevant : allQuestions;
+    state.currentQuestionIndex = 0;
+    state.answers = {};
+
+    if (!state.diagQuestions.length) {
+      document.getElementById("question-container").innerHTML =
+        "<p>No questions found for your class/subjects. Check that questions were seeded in Supabase.</p>";
+      return;
+    }
+
+    renderQuestion();
+  } catch (e) {
+    document.getElementById("question-container").innerHTML =
+      `<p style="color:red">Error loading questions: ${e.message}</p>`;
+  }
 }
 
 function renderQuestion() {

@@ -1,5 +1,5 @@
 // EduSphere - Connected to FastAPI + Supabase backend
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://edusphere-api-dzhc.onrender.com";
 // Keep track of conversation history across turns
 let chatHistory = [];
 

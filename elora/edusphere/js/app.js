@@ -113,7 +113,14 @@ function appendChatMessage(sender, text) {
     border: ${sender === 'user' ? 'none' : '1px solid #e5e7eb'};
     word-break: break-word;
   `;
-  bubble.textContent = text;
+  function stripMarkdown(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1')   // remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')        // remove *italic*
+      .replace(/#{1,6}\s?/g, '')          // remove # headers
+      .replace(/`{1,3}(.*?)`{1,3}/g, '$1'); // remove `code`
+  }
+  bubble.textContent = stripMarkdown(text);;
 
   wrapper.appendChild(bubble);
   container.appendChild(wrapper);

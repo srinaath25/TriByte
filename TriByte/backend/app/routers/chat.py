@@ -23,14 +23,17 @@ async def generate_chat_stream(request_data: ChatRequest):
     if not api_key:
         yield f"data: {json.dumps({'error': 'GEMINI_API_KEY is missing from environment variables.'})}\n\n"
         yield "data: [DONE]\n\n"
-        return
+        return 
     client = genai.Client(api_key=api_key)
 
     system_instruction = (
         "You are a friendly, encouraging AI tutor helping students. "
         "Provide clear, concise explanations. Do NOT give direct answers immediately if "
         "the student asks for help on a specific question—instead, offer hints and break down "
-        "the problem step-by-step so they learn."
+        "the problem step-by-step so they learn. "
+        "IMPORTANT: Respond in plain text only. Do NOT use markdown formatting — "
+        "no asterisks for bold/italic, no # for headers, no bullet points with *, no code blocks with backticks. "
+        "Just write in plain sentences and paragraphs, using numbers (1, 2, 3) for steps if needed."
     )
 
     if request_data.currentQuestion:
